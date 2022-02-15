@@ -1,71 +1,45 @@
 import os
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
 class MiniKuma(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=["mk:", "Mk:", "mK:", "MK:", "mk/", "Mk/", "mK/", "MK/"])
 
-	def __init__(self):
-		super().__init__(command_prefix="mk: ")
-		
-		@self.command(name='test')
-        async def custom_command(ctx):
-            print("Hello world !")
+        @self.command(name='join')                                                                      # mk:join
+        async def join_channel(ctx):
+            channel = ctx.author.voice.channel
+            if channel is not None:
+                voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+                if voice_client == channel:
+                    await ctx.send("I am alredy in this voice channel")
+                elif voice_client != channel:
+                    leave_channel(ctx)
+                    await channel.connect()
+                else:
+                    await channel.connect()
+            else:                
+                await ctx.send("You must be in a voice channel first so I can join it.")
+        
+        @self.command(name='leave')                                                                      # mk:leave
+        async def leave_channel(ctx):
+            if (ctx.voice_client):                              # If the bot is in a voice channel 
+                await ctx.guild.voice_client.disconnect()
+            else:                                               # But if it isn't
+                await ctx.send("I'm not in a voice channel, use the join command to make me join")
 
-	async def on_ready(self): 		# EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLINE TO ONLINE.
-		guild_count = 0
-		
-		for guild in self.guilds: 	# CREATES A COUNTER TO KEEP TRACK OF HOW MANY GUILDS / SERVERS THE BOT IS CONNECTED TO.
-			print(f"- {guild.id} (name: {guild.name})")
-			guild_count = guild_count + 1
+    async def on_ready(self):
+        # CREATES A COUNTER TO KEEP TRACK OF HOW MANY GUILDS / SERVERS THE BOT IS CONNECTED TO.
+        guild_count = 0
 
-		print(f"MiniKuma is in {str(guild_count)} guilds.")
-	
-	
+        for guild in bot.guilds:
+            print(f"- {guild.id} (name: {guild.name})")
+            guild_count = guild_count + 1
+
+        print("MiniKuma is in " + str(guild_count) + " guilds.")
+
+
 bot = MiniKuma()
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
-
-
-
-
-
-
-
-
-
-
-
-
-# bot = discord.Client()
-
-# # EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLINE TO ONLINE.
-# @bot.event
-# async def on_ready():
-# 	# CREATES A COUNTER TO KEEP TRACK OF HOW MANY GUILDS / SERVERS THE BOT IS CONNECTED TO.
-# 	guild_count = 0
-
-# 	for guild in bot.guilds:
-# 		print(f"- {guild.id} (name: {guild.name})")
-# 		guild_count = guild_count + 1
-
-# 	print("MiniKuma is in " + str(guild_count) + " guilds.")
-
-# # EVENT LISTENER FOR WHEN A NEW MESSAGE IS SENT TO A CHANNEL.
-# @bot.event
-# async def on_message(message):
-# 	# CHECKS IF THE MESSAGE THAT WAS SENT IS EQUAL TO "HELLO".
-# 	if message.content[:4] == "mk: ":
-
-# 		await message.channel.send('longueur du message: '+str(len(message.content[4:])))
-
-# 		# if message.content[4:] == "join":
-# 		# 	channel = message.author.voice.channel
-#     	# 	await channel.connect()
-# 		# elif message.content[4:] == "leave":
-# 		# 	await message.voice_client.disconnect()
-
-# bot.run(os.getenv('DISCORD_BOT_TOKEN'))
-
-
